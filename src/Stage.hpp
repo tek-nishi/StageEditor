@@ -53,97 +53,6 @@ struct Stage {
   ci::Vec2i size;
 
   
-  Stage() = default;
-  
-  Stage(const ci::JsonTree& params) {
-    size = ci::Vec2i::zero();
-    
-    int z = 0;
-    for (const auto& rows : params["body"]) {
-      std::vector<Cube> line;
-
-      int x = 0;
-      for (const auto& p : rows) {
-        ci::Vec3i cube_pos(x, p.getValue<int>(), z);
-        line.emplace_back(cube_pos);
-
-        x += 1;
-      }
-      body.push_back(std::move(line));
-
-      size.x = std::max(size.x, x);
-      z += 1;
-    }
-    size.y = z;
-
-    color    = Json::getColor<float>(params["color"]);
-    bg_color = Json::getColor<float>(params["bg_color"]);
-
-    x_offset = Json::getValue<int>(params, "x_offset", 0);
-    pickable = Json::getValue<int>(params, "pickable", 0);
-
-    build_speed    = Json::getValue(params, "build_speed", 0.0f);
-    collapse_speed = Json::getValue(params, "collapse_speed", 0.0f);
-    auto_collapse  = Json::getValue(params, "auto_collapse", 0.0f);
-
-    light_tween = Json::getValue(params, "light_tween", std::string("default"));
-    
-    if (params.hasChild("items")) {
-      for (const auto& p : params["items"]) {
-        const auto pos = Json::getVec3<int>(p);
-        auto* cube = getCube(pos);
-        if (cube) {
-          cube->item = true;
-        }
-      }
-    }
-    
-    if (params.hasChild("moving")) {
-      for (const auto& p : params["moving"]) {
-        const auto pos = Json::getVec3<int>(p["entry"]);
-        auto* cube = getCube(pos);
-        if (cube) {
-          cube->moving = true;
-
-          // 文字列の状態で編集するため
-          // 移動パターンを取り出して変換している
-          std::ostringstream pattern;
-          size_t index = 0;
-          for (const auto& value : p["pattern"]) {
-            if (index > 0) pattern << ", ";
-            pattern << value.getValue<int>();
-            index += 1;
-          }
-          cube->pattern = pattern.str();
-        }
-      }
-    }
-    
-    if (params.hasChild("switches")) {
-      for (const auto& p : params["switches"]) {
-        const auto pos = Json::getVec3<int>(p["position"]);
-        auto* cube = getCube(pos);
-        if (cube) {
-          cube->sw = true;
-
-          // 文字列の状態で編集するため
-          // 移動パターンを取り出して変換している
-          for (const auto& value : p["target"]) {
-            std::ostringstream target;
-            size_t index = 0;
-            for (const auto& v : value) {
-              if (index > 0) target << ", ";
-              target << v.getValue<int>();
-              index += 1;
-            }
-            cube->target.push_back(target.str());
-          }
-        }
-      }
-    }
-  }
-
-
   void toggleItem(const ci::Vec2i& pos) {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
@@ -244,9 +153,8 @@ struct Stage {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     return cube && cube->sw;
   }
+  
 
-
-private:
   const Cube* const getCube(const ci::Vec3i& pos) const {
     for (auto& rows : body) {
       for (auto& cube : rows) {

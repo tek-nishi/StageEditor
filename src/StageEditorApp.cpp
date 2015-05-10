@@ -9,6 +9,7 @@
 #include "cinder/Params/Params.h"
 #include "JsonUtil.hpp"
 #include "Stage.hpp"
+#include "StageSerializer.hpp"
 #include "StageDrawer.hpp"
 
 
@@ -43,6 +44,9 @@ class StageEditorApp : public AppNative {
   params::InterfaceGlRef settings_panel;
   params::InterfaceGlRef property_panel;
   
+
+  float bg_duration;
+  Color bg_color;
 
   
   void prepareSettings(Settings* settings) override {
@@ -81,6 +85,8 @@ class StageEditorApp : public AppNative {
     property_panel->setPosition(Json::getVec2<int>(params_["app.property.position"]));
 
     gl::enableAlphaBlending();
+    bg_color = Color::black();
+    bg_duration = 0.0f;
   }
 
 
@@ -140,10 +146,14 @@ class StageEditorApp : public AppNative {
     switch (chara) {
     case 'W':
       writeStage(current_stage);
+      bg_color = Color(0.5, 0, 0);
+      bg_duration = 0.5;
       break;
 
     case 'C':
       copyAllStagesToApp();
+      bg_color = Color(0.5, 0.5, 0);
+      bg_duration = 0.5;
       break;
 
     case ',':
@@ -214,10 +224,16 @@ class StageEditorApp : public AppNative {
   
   
 	void update() override {
+    if (bg_duration > 0.0f) {
+      bg_duration -= 1 / 60.0;
+      if (bg_duration <= 0.0f) {
+        bg_color = Color::black();
+      }
+    }
   }
   
 	void draw() override {
-    gl::clear( Color( 0, 0, 0 ) );
+    gl::clear(bg_color);
 
     gl::pushModelView();
 
@@ -256,66 +272,16 @@ class StageEditorApp : public AppNative {
     return stage_path[stage_num];
   }
 
-  
+  void loadStage(const int stage_num) {
+    auto path = makeStagePath(stage_num);
+    stage = StageSerializer::deserialize(path);
+  }
+
   void writeStage(const int stage_num) {
     backupStage(stage_num);
-    
-    ci::JsonTree stage_data = ci::JsonTree::makeObject("stage");
-    
-    auto body     = ci::JsonTree::makeArray("body");
-    auto items    = ci::JsonTree::makeArray("items");
-    auto moving   = ci::JsonTree::makeArray("moving");
-    auto switches = ci::JsonTree::makeArray("switches");
-    
-    for (const auto& rows : stage.body) {
-      body.pushBack(jsonArrayFromStageBody(rows));
-        
-      for (const auto& cube : rows) {
-        if (cube.item) {
-          items.pushBack(jsonArrayFromVec3(cube.pos));
-        }
-        
-        if (cube.moving) {
-          moving.pushBack(makeMoving(cube.pos, cube.pattern));
-        }
-        
-        if (cube.sw) {
-          switches.pushBack(makeSwitch(cube.pos, cube.target));
-        }
-      }
-    }
 
-    stage_data.addChild(body);
-
-    if (items.hasChildren()) {
-      stage_data.addChild(items);
-    }
-    if (moving.hasChildren()) {
-      stage_data.addChild(moving);
-    }
-    if (switches.hasChildren()) {
-      stage_data.addChild(switches);
-    }
-
-    stage_data.addChild(jsonArrayFromColor("color", stage.color)["color"]);
-    stage_data.addChild(jsonArrayFromColor("bg_color", stage.bg_color)["bg_color"]);
-    
-    stage_data.addChild(ci::JsonTree("x_offset", stage.x_offset))
-      .addChild(ci::JsonTree("pickable", stage.pickable));
-
-    if (stage.build_speed > 0.0f) {
-      stage_data.addChild(ci::JsonTree("build_speed", stage.build_speed));
-    }
-    if (stage.collapse_speed > 0.0f) {
-      stage_data.addChild(ci::JsonTree("collapse_speed", stage.collapse_speed));
-    }
-    if (stage.auto_collapse > 0.0f) {
-      stage_data.addChild(ci::JsonTree("auto_collapse", stage.auto_collapse));
-    }
-    stage_data.addChild(ci::JsonTree("light_tween", stage.light_tween));
-    
-    auto full_path = getDocumentPath(makeStagePath(stage_num));
-    stage_data.write(full_path, ci::JsonTree::WriteOptions().createDocument(true));
+    auto path = getDocumentPath(makeStagePath(stage_num));
+    StageSerializer::serialize(stage, path);
   }
 
   void backupStage(const int stage_num) {
@@ -327,10 +293,6 @@ class StageEditorApp : public AppNative {
     boost::filesystem::copy_file(origin_path, backup_path);
   }
 
-  void loadStage(const int stage_num) {
-    auto stage_params = Json::readFromFile(makeStagePath(stage_num));
-    stage = Stage(stage_params["stage"]);
-  }
 
   void copyAllStagesToApp() {
     for (const auto& path : stage_path) {
@@ -343,85 +305,18 @@ class StageEditorApp : public AppNative {
     }
   }
 
-  
-  static ci::JsonTree makeMoving(const ci::Vec3i& pos, const std::string& pattern) {
-    std::ostringstream text;
-    text << "{ \"entry\": ["
-         << pos.x << ","
-         << pos.y << ","
-         << pos.z
-         << "], \"pattern\": [ "
-         << pattern
-         << "] }";
-
-    return ci::JsonTree(text.str());
-  }
-  
-  static ci::JsonTree makeSwitch(const ci::Vec3i& pos, const std::vector<std::string>& target) {
-    std::ostringstream text;
-    text << "{ \"position\": ["
-         << pos.x << ","
-         << pos.y << ","
-         << pos.z
-         << "], \"target\": [ ";
-
-    size_t index = 0;
-    for (const auto& t : target) {
-      if (index > 0) text << ", ";
-      text << "[ " << t << " ]";
-      index += 1;
-    }
-    text << "] }";
-
-    return ci::JsonTree(text.str());
-  }
-  
-
-  static ci::JsonTree jsonArrayFromStageBody(const std::vector<Stage::Cube>& cubes) {
-    std::ostringstream text;
-    text << "[";
-
-    size_t i = 0;
-    for (const auto& cube : cubes) {
-      if (i > 0) text << ",";
-      ++i;
-
-      text << cube.pos.y;
-    }
-
-    text << "]";
-
-    return ci::JsonTree(text.str());
-  }
-  
-  template <typename T>
-  static ci::JsonTree jsonArrayFromVec3(const T& vector) {
-    std::ostringstream text;
-    text << "[ "
-         << vector.x << ", "
-         << vector.y << ", "
-         << vector.z << " ]";
-
-    return ci::JsonTree(text.str());
-  }
-  
-  template <typename T>
-  static ci::JsonTree jsonArrayFromColor(const std::string& key, const T& color) {
-    std::ostringstream text;
-    text << "{ \"" << key << "\":";
-    text << "[ "
-         << color.r << ", "
-         << color.g << ", "
-         << color.b << " ] }";
-
-    return ci::JsonTree(text.str());
-  }
-
 
   static std::string getDocumentPath(const std::string& path) {
+#if defined (CINDER_MAC)
+    // OSXはプロジェクト位置基底(assertが実行ファイルと同梱されてしまうため)
     std::ostringstream full_path;
     full_path << PREPRO_TO_STR(SRCROOT) << "../assets/" << path;
+
     return full_path.str();
+#else
+    // Windowsはassetから
+    return getAssetPath().str();
+#endif
   }
 
 
