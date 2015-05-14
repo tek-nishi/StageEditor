@@ -124,6 +124,9 @@ class StageEditorApp : public AppNative {
         else if (stage.isSwitchCube(selected_pos)) {
           setupSwitchPropertyPanel();
         }
+        else if (stage.isFallingCube(selected_pos)) {
+          setupFallingPropertyPanel();
+        }
         else {
           clearPropertyPanel();
         }
@@ -193,6 +196,10 @@ class StageEditorApp : public AppNative {
           stage.toggleSwitch(cursor_pos);
           break;
 
+        case 'f':
+          stage.toggleFalling(cursor_pos);
+          break;
+          
         case '-':
           stage.changeHeight(cursor_pos, -1);
           break;
@@ -400,7 +407,7 @@ class StageEditorApp : public AppNative {
     settings_panel->addSeparator();
 
     settings_panel->addText("save: W  stage change: , .");
-    settings_panel->addText("item: i moving: m switch: s");
+    settings_panel->addText("item: i moving: m switch: s falling: f");
     settings_panel->addText("change height: - ^ 0");
     settings_panel->addText("copy to app: C");
   }
@@ -444,6 +451,18 @@ class StageEditorApp : public AppNative {
     property_panel->addSeparator();
 
     property_panel->addText("target number change: [ ]");
+  }
+  
+  void setupFallingPropertyPanel() {
+    property_panel->clear();
+
+    property_panel->addText("falling");
+
+    auto& interval = stage.getInterval(selected_pos);
+    auto& delay = stage.getDelay(selected_pos);
+    
+    property_panel->addParam("interval", &interval);
+    property_panel->addParam("delay", &delay);
   }
   
 };

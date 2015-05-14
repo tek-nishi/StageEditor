@@ -16,24 +16,27 @@ struct Stage {
     bool item;
     bool moving;
     bool sw;
+    bool falling;
     
-    std::string pattern;
-    std::vector<std::string> target;
-    
+    std::string pattern;                            // MovingCube
+    std::vector<std::string> target;                // Switch
+    float interval;                                 // FallingCube
+    float delay;                                    // FallingCube
 
     Cube() :
       pos(ci::Vec3i::zero()),
       item(false),
       moving(false),
-      sw(false)
+      sw(false),
+      falling(false),
+      delay(0)
     {}
     
-    Cube(const ci::Vec3f& cube_pos) :
-      pos(cube_pos),
-      item(false),
-      moving(false),
-      sw(false)
-    {}
+    explicit Cube(const ci::Vec3f& cube_pos) :
+      Cube()
+    {
+      pos = cube_pos;
+    }
   };
   
   std::vector<std::vector<Cube> > body;
@@ -74,6 +77,13 @@ struct Stage {
     }
   }
 
+  void toggleFalling(const ci::Vec2i& pos) {
+    auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
+    if (cube) {
+      cube->falling = !cube->falling;
+    }
+  }
+
   void changeHeight(const ci::Vec2i& pos, const int value) {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
@@ -106,6 +116,21 @@ struct Stage {
     return cube ? cube->target : null_data;
   }
 
+  float& getInterval(const ci::Vec2i& pos) {
+    auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
+
+    static float dummy_param = 0.0f;
+    return cube ? cube->interval : dummy_param;
+  }
+
+  float& getDelay(const ci::Vec2i& pos) {
+    auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
+
+    static float dummy_param = 0.0f;
+    return cube ? cube->delay : dummy_param;
+  }
+
+  
   void reduceSwitchTarget(const ci::Vec2i& pos) {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube && (cube->target.size() > 1)) {
@@ -152,6 +177,11 @@ struct Stage {
   bool isSwitchCube(const ci::Vec2i& pos) const {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     return cube && cube->sw;
+  }
+
+  bool isFallingCube(const ci::Vec2i& pos) const {
+    auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
+    return cube && cube->falling;
   }
   
 

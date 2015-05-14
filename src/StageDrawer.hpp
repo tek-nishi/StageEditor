@@ -30,6 +30,9 @@ void draw(const Stage& stage) {
       else if (cube.sw) {
         ci::gl::color(1, 0, 1);
       }
+      else if (cube.falling) {
+        ci::gl::color(1, 0.5, 0);
+      }
       else {
         ci::gl::color(stage.color);
       }

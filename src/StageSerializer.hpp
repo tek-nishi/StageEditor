@@ -42,7 +42,23 @@ ci::JsonTree makeSwitch(const ci::Vec3i& pos, const std::vector<std::string>& ta
 
   return ci::JsonTree(text.str());
 }
-  
+
+ci::JsonTree makeFalling(const ci::Vec3i& pos,
+                         const float interval, const float delay) {
+  std::ostringstream text;
+  text << "{ \"entry\": ["
+       << pos.x << ","
+       << pos.y << ","
+       << pos.z
+       << "], \"interval\": "
+       << interval << ","
+       << " \"delay\": "
+       << delay
+       << " }";
+
+  return ci::JsonTree(text.str());
+}
+
 
 ci::JsonTree jsonArrayFromStageBody(const std::vector<Stage::Cube>& cubes) {
   std::ostringstream text;
@@ -177,6 +193,22 @@ Stage deserialize(const std::string& path) {
     }
   }
 
+  if (params.hasChild("falling")) {
+    for (const auto& p : params["falling"]) {
+      const auto pos = Json::getVec3<int>(p["entry"]);
+
+      const float interval = p["interval"].getValue<float>();
+      const float delay    = p["delay"].getValue<float>();
+
+      auto* cube = stage.getCube(pos);
+      if (cube) {
+        cube->falling  = true;
+        cube->interval = interval;
+        cube->delay    = delay;
+      }      
+    }
+  }
+
   return stage;
 }
 
@@ -188,6 +220,7 @@ void serialize(const Stage& stage, const std::string& path) {
   auto items    = ci::JsonTree::makeArray("items");
   auto moving   = ci::JsonTree::makeArray("moving");
   auto switches = ci::JsonTree::makeArray("switches");
+  auto falling  = ci::JsonTree::makeArray("falling");
     
   for (const auto& rows : stage.body) {
     body.pushBack(jsonArrayFromStageBody(rows));
@@ -204,6 +237,10 @@ void serialize(const Stage& stage, const std::string& path) {
       if (cube.sw) {
         switches.pushBack(makeSwitch(cube.pos, cube.target));
       }
+
+      if (cube.falling) {
+        falling.pushBack(makeFalling(cube.pos, cube.interval, cube.delay));
+      }
     }
   }
 
@@ -217,6 +254,9 @@ void serialize(const Stage& stage, const std::string& path) {
   }
   if (switches.hasChildren()) {
     stage_data.addChild(switches);
+  }
+  if (falling.hasChildren()) {
+    stage_data.addChild(falling);
   }
 
   stage_data.addChild(jsonArrayFromColor("color", stage.color)["color"]);
