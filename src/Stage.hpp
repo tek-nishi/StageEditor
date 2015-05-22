@@ -67,32 +67,32 @@ struct Stage {
   void toggleItem(const ci::Vec2i& pos) {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
+      if (cube->moving || cube->sw || cube->falling) return;
       cube->item = !cube->item;
-      cube->cleanup();
     }
   }
   
   void toggleMoving(const ci::Vec2i& pos) {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
+      if (cube->item || cube->sw || cube->falling) return;
       cube->moving = !cube->moving;
-      cube->cleanup();
     }
   }
 
   void toggleSwitch(const ci::Vec2i& pos) {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
+      if (cube->item || cube->moving || cube->falling) return;
       cube->sw = !cube->sw;
-      cube->cleanup();
     }
   }
 
   void toggleFalling(const ci::Vec2i& pos) {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
+      if (cube->item || cube->moving || cube->sw) return;
       cube->falling = !cube->falling;
-      cube->cleanup();
     }
   }
 
