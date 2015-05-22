@@ -29,6 +29,7 @@ struct Stage {
       moving(false),
       sw(false),
       falling(false),
+      interval(0.0),
       delay(0)
     {}
     
@@ -36,6 +37,13 @@ struct Stage {
       Cube()
     {
       pos = cube_pos;
+    }
+
+    void cleanup() {
+      pattern.clear();
+      target.clear();
+      interval = 0.0f;
+      delay    = 0.0f;
     }
   };
   
@@ -60,6 +68,7 @@ struct Stage {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
       cube->item = !cube->item;
+      cube->cleanup();
     }
   }
   
@@ -67,6 +76,7 @@ struct Stage {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
       cube->moving = !cube->moving;
+      cube->cleanup();
     }
   }
 
@@ -74,6 +84,7 @@ struct Stage {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
       cube->sw = !cube->sw;
+      cube->cleanup();
     }
   }
 
@@ -81,6 +92,7 @@ struct Stage {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
       cube->falling = !cube->falling;
+      cube->cleanup();
     }
   }
 

@@ -3,8 +3,8 @@
     "size": [ 640, 800 ],
 
     "settings": {
-      "size": [ 260, 500 ],
-      "position": [ 340, 20 ]
+      "size": [ 280, 500 ],
+      "position": [ 320, 20 ]
     },
 
     "property": {
@@ -26,7 +26,8 @@
       "stage07.json",
       "stage08.json",
       "stage09.json",
-      "stage10.json"
+      "stage10.json",
+      "stage11.json"
     ]
   }
 }
