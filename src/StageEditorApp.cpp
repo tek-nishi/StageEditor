@@ -79,6 +79,7 @@ class StageEditorApp : public AppNative {
 
     settings_panel = params::InterfaceGl::create("settings", Json::getVec2<int>(params_["app.settings.size"]));
     settings_panel->setPosition(Json::getVec2<int>(params_["app.settings.position"]));
+    settings_panel->setOptions("", "refresh=0.033");
     setupSettingsPanel();
 
     property_panel = params::InterfaceGl::create("property", Json::getVec2<int>(params_["app.property.size"]));
@@ -353,6 +354,11 @@ class StageEditorApp : public AppNative {
       text << "stage: " << stage_path[current_stage];
       settings_panel->addText(text.str());
     }
+
+    settings_panel->addSeparator();
+
+    settings_panel->addParam("x", &cursor_pos.x, false);
+    settings_panel->addParam("y", &cursor_pos.y, false);
 
     settings_panel->addSeparator();
 
