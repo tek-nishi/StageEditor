@@ -102,8 +102,7 @@ ci::JsonTree jsonArrayFromColor(const std::string& key, const T& color) {
 
 
 Stage deserialize(const std::string& path) {
-  // 最上位階層stageは捨てる
-  auto params = Json::readFromFile(path)["stage"];
+  auto params = Json::readFromFile(path);
   
   Stage stage;
 
@@ -276,7 +275,7 @@ void serialize(const Stage& stage, const std::string& path) {
   }
   stage_data.addChild(ci::JsonTree("light_tween", stage.light_tween));
     
-  stage_data.write(path, ci::JsonTree::WriteOptions().createDocument(true));
+  stage_data.write(path);
 }
 
 }
