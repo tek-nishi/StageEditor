@@ -181,6 +181,14 @@ class StageEditorApp : public AppNative {
       clearPropertyPanel();
       break;
 
+    case 'K':
+      stage.clear();
+      on_cursor = false;
+      selected  = false;
+
+      clearPropertyPanel();
+      break;
+
       
     default:
       if (on_cursor) {
@@ -214,6 +222,7 @@ class StageEditorApp : public AppNative {
           break;
         }
       }
+      
       if (selected && stage.isSwitchCube(selected_pos)) {
         switch (chara) {
         case '[':
@@ -418,6 +427,7 @@ class StageEditorApp : public AppNative {
     settings_panel->addText("item: i moving: m switch: s falling: f");
     settings_panel->addText("change height: - ^ 0");
     settings_panel->addText("copy to app: C");
+    settings_panel->addText("cleanup stage: K");
   }
 
 

@@ -213,6 +213,21 @@ struct Stage {
     return const_cast<Cube*>(static_cast<const Stage*>(this)->getCube(pos));
   }
 
+
+  void clear() {
+    for (auto& row : body) {
+      for (auto& cube : row) {
+        cube.pos.y = 0;
+        
+        cube.item    = false;
+        cube.moving  = false;
+        cube.sw      = false;
+        cube.falling = false;
+        
+        cube.cleanup();
+      }
+    }
+  }
   
   void validate() {
     for (auto& row : body) {
