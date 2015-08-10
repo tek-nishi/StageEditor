@@ -288,6 +288,8 @@ class StageEditorApp : public AppNative {
   void writeStage(const int stage_num) {
     backupStage(stage_num);
 
+    stage.validate();
+
     auto path = getDocumentPath(makeStagePath(stage_num));
     StageSerializer::serialize(stage, path);
   }
