@@ -13,10 +13,6 @@ namespace StageDrawer {
 
 
 void draw(const Stage& stage) {
-  ci::gl::lineWidth(1);
-  ci::gl::color(0, 0, 1);
-  ci::gl::drawLine(ci::Vec2i(-stage.x_offset, -2), ci::Vec2i(-stage.x_offset, stage.size.y + 2));
-  
   for (const auto& rows : stage.body) {
     for (const auto& cube : rows) {
       if (cube.pos.y < 0) continue;

@@ -22,6 +22,8 @@ namespace ngs {
 class StageEditorApp : public AppNative {
   ci::JsonTree params_;
 
+  int grid_;
+  
   std::vector<std::string> stage_path;
   std::string copy_path;
 
@@ -53,6 +55,8 @@ class StageEditorApp : public AppNative {
     // アプリ起動時の設定はここで処理する
     params_ = Json::readFromFile("params.json");
 
+    grid_ = params_["app.grid"].getValue<int>();
+    
     auto size = Json::getVec2<int>(params_["app.size"]);
     settings->setWindowSize(size);
 
@@ -257,6 +261,13 @@ class StageEditorApp : public AppNative {
     gl::translate(view_offset);
     gl::rotate(view_rotate);
     gl::scale(view_scale);
+
+    ci::gl::lineWidth(1);
+    ci::gl::color(0, 0, 1);
+    ci::gl::drawLine(ci::Vec2i(-stage.x_offset, -2), ci::Vec2i(-stage.x_offset, stage.size.y + 2));
+
+    ci::gl::color(1, 0, 0);
+    ci::gl::drawLine(ci::Vec2i(-stage.x_offset + grid_, -2), ci::Vec2i(-stage.x_offset + grid_, stage.size.y + 2));
     
     StageDrawer::draw(stage);
 
