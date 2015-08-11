@@ -13,7 +13,7 @@
       "position": [ 10, 550 ]
     },
 
-    "copy_path": "../../ColoColoParade/assets/",
+    "copy_path": "../../BrickTrip/assets/",
     
     "stage": [
       "startline.json",
