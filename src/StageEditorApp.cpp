@@ -159,6 +159,7 @@ class StageEditorApp : public AppNative {
       break;
 
     case 'C':
+      writeStage(current_stage);
       copyAllStagesToApp();
       bg_color = Color(0.5, 0.5, 0);
       bg_duration = 0.5;
@@ -322,8 +323,7 @@ class StageEditorApp : public AppNative {
 
     boost::filesystem::copy_file(origin_path, backup_path);
   }
-
-
+  
   void copyAllStagesToApp() {
     for (const auto& path : stage_path) {
       auto path_from = getDocumentPath(path);
