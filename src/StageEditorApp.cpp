@@ -409,6 +409,7 @@ class StageEditorApp : public AppNative {
 
     settings_panel->addSeparator();
 
+    settings_panel->addParam("camera", &stage.camera);
     settings_panel->addParam("light_tween", &stage.light_tween);
 
     settings_panel->addSeparator();

@@ -59,6 +59,8 @@ struct Stage {
   float collapse_speed;
   float auto_collapse;
 
+  std::string camera;
+  
   std::string light_tween;
 
   ci::Vec2i size;

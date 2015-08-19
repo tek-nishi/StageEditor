@@ -136,6 +136,7 @@ Stage deserialize(const std::string& path) {
   stage.collapse_speed = Json::getValue(params, "collapse_speed", 0.0f);
   stage.auto_collapse  = Json::getValue(params, "auto_collapse", 0.0f);
 
+  stage.camera = Json::getValue(params, "camera", std::string("normal"));
   stage.light_tween = Json::getValue(params, "light_tween", std::string("default"));
     
   if (params.hasChild("items")) {
@@ -273,6 +274,7 @@ void serialize(const Stage& stage, const std::string& path) {
   if (stage.auto_collapse > 0.0f) {
     stage_data.addChild(ci::JsonTree("auto_collapse", stage.auto_collapse));
   }
+  stage_data.addChild(ci::JsonTree("camera", stage.camera));
   stage_data.addChild(ci::JsonTree("light_tween", stage.light_tween));
     
   stage_data.write(path);
