@@ -132,6 +132,9 @@ class StageEditorApp : public AppNative {
         else if (stage.isFallingCube(selected_pos)) {
           setupFallingPropertyPanel();
         }
+        else if (stage.isOnewayCube(selected_pos)) {
+          setupOnewayPropertyPanel();
+        }
         else {
           clearPropertyPanel();
         }
@@ -212,6 +215,10 @@ class StageEditorApp : public AppNative {
 
         case 'f':
           stage.toggleFalling(cursor_pos);
+          break;
+
+        case 'o':
+          stage.toggleOneway(cursor_pos);
           break;
           
         case '-':
@@ -437,6 +444,7 @@ class StageEditorApp : public AppNative {
 
     settings_panel->addText("save: W  stage change: , .");
     settings_panel->addText("item: i moving: m switch: s falling: f");
+    settings_panel->addText("oneway: o");
     settings_panel->addText("change height: - ^ 0");
     settings_panel->addText("copy to app: C");
     settings_panel->addText("cleanup stage: K");
@@ -482,6 +490,21 @@ class StageEditorApp : public AppNative {
 
     property_panel->addText("target number change: [ ]");
   }
+
+  void setupOnewayPropertyPanel() {
+    property_panel->clear();
+
+    property_panel->addText("oneway");
+    
+    property_panel->addSeparator();
+
+    auto& direction = stage.getDirection(selected_pos);
+    property_panel->addParam("direction", &direction);
+
+    auto& power = stage.getPower(selected_pos);
+    property_panel->addParam("power", &power);
+    
+  }
   
   void setupFallingPropertyPanel() {
     property_panel->clear();
@@ -489,9 +512,9 @@ class StageEditorApp : public AppNative {
     property_panel->addText("falling");
 
     auto& interval = stage.getInterval(selected_pos);
-    auto& delay = stage.getDelay(selected_pos);
-    
     property_panel->addParam("interval", &interval);
+
+    auto& delay = stage.getDelay(selected_pos);
     property_panel->addParam("delay", &delay);
   }
   

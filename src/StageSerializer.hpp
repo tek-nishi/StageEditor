@@ -59,6 +59,22 @@ ci::JsonTree makeFalling(const ci::Vec3i& pos,
   return ci::JsonTree(text.str());
 }
 
+ci::JsonTree makeOneway(const ci::Vec3i& pos,
+                        const std::string direction, const int power) {
+  std::ostringstream text;
+  text << "{ \"position\": ["
+       << pos.x << ","
+       << pos.y << ","
+       << pos.z
+       << "], \"direction\": \""
+       << direction << "\","
+       << " \"power\": "
+       << power
+       << " }";
+
+  return ci::JsonTree(text.str());
+}
+
 
 ci::JsonTree jsonArrayFromStageBody(const std::vector<Stage::Cube>& cubes) {
   std::ostringstream text;
@@ -144,7 +160,7 @@ Stage deserialize(const std::string& path) {
       const auto pos = Json::getVec3<int>(p);
       auto* cube = stage.getCube(pos);
       if (cube) {
-        cube->item = true;
+        cube->type = Stage::Cube::ITEM;
       }
     }
   }
@@ -154,7 +170,7 @@ Stage deserialize(const std::string& path) {
       const auto pos = Json::getVec3<int>(p["entry"]);
       auto* cube = stage.getCube(pos);
       if (cube) {
-        cube->moving = true;
+        cube->type = Stage::Cube::MOVING;
 
         // 文字列の状態で編集するため
         // 移動パターンを取り出して変換している
@@ -175,7 +191,7 @@ Stage deserialize(const std::string& path) {
       const auto pos = Json::getVec3<int>(p["position"]);
       auto* cube = stage.getCube(pos);
       if (cube) {
-        cube->sw = true;
+        cube->type = Stage::Cube::SWITCH;
 
         // 文字列の状態で編集するため
         // 移動パターンを取り出して変換している
@@ -202,9 +218,25 @@ Stage deserialize(const std::string& path) {
 
       auto* cube = stage.getCube(pos);
       if (cube) {
-        cube->falling  = true;
+        cube->type = Stage::Cube::FALLING;
         cube->interval = interval;
         cube->delay    = delay;
+      }      
+    }
+  }
+
+  if (params.hasChild("oneways")) {
+    for (const auto& p : params["oneways"]) {
+      const auto pos = Json::getVec3<int>(p["position"]);
+
+      const auto direction = p["direction"].getValue<std::string>();
+      const auto power     = p["power"].getValue<int>();
+
+      auto* cube = stage.getCube(pos);
+      if (cube) {
+        cube->type = Stage::Cube::ONEWAY;
+        cube->direction = direction;
+        cube->power     = power;
       }      
     }
   }
@@ -221,25 +253,32 @@ void serialize(const Stage& stage, const std::string& path) {
   auto moving   = ci::JsonTree::makeArray("moving");
   auto switches = ci::JsonTree::makeArray("switches");
   auto falling  = ci::JsonTree::makeArray("falling");
+  auto oneways  = ci::JsonTree::makeArray("oneways");
     
   for (const auto& rows : stage.body) {
     body.pushBack(jsonArrayFromStageBody(rows));
         
     for (const auto& cube : rows) {
-      if (cube.item) {
+      switch (cube.type) {
+      case Stage::Cube::ITEM:
         items.pushBack(jsonArrayFromVec3(cube.pos));
-      }
-        
-      if (cube.moving) {
-        moving.pushBack(makeMoving(cube.pos, cube.pattern));
-      }
-        
-      if (cube.sw) {
-        switches.pushBack(makeSwitch(cube.pos, cube.target));
-      }
+        break;
 
-      if (cube.falling) {
+      case Stage::Cube::MOVING:
+        moving.pushBack(makeMoving(cube.pos, cube.pattern));
+        break;
+
+      case Stage::Cube::SWITCH:
+        switches.pushBack(makeSwitch(cube.pos, cube.target));
+        break;
+
+      case Stage::Cube::FALLING:
         falling.pushBack(makeFalling(cube.pos, cube.interval, cube.delay));
+        break;
+
+      case Stage::Cube::ONEWAY:
+        oneways.pushBack(makeOneway(cube.pos, cube.direction, cube.power));
+        break;
       }
     }
   }
@@ -257,6 +296,9 @@ void serialize(const Stage& stage, const std::string& path) {
   }
   if (falling.hasChildren()) {
     stage_data.addChild(falling);
+  }
+  if (oneways.hasChildren()) {
+    stage_data.addChild(oneways);
   }
 
   stage_data.addChild(jsonArrayFromColor("color", stage.color)["color"]);

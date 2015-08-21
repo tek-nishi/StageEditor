@@ -11,26 +11,34 @@
 namespace ngs {
 
 struct Stage {
+  
   struct Cube {
+    enum {
+      NONE    = 0,
+      ITEM    = 1 << 0,
+      MOVING  = 1 << 1,
+      SWITCH  = 1 << 2,
+      FALLING = 1 << 3,
+      ONEWAY  = 1 << 4,
+    };
+  
     ci::Vec3i pos;
-    bool item;
-    bool moving;
-    bool sw;
-    bool falling;
+    int type;
     
     std::string pattern;                            // MovingCube
     std::vector<std::string> target;                // Switch
     float interval;                                 // FallingCube
     float delay;                                    // FallingCube
+    std::string direction;                          // Oneway
+    int power;                                      // Oneway
 
     Cube() :
       pos(ci::Vec3i::zero()),
-      item(false),
-      moving(false),
-      sw(false),
-      falling(false),
+      type(NONE),
       interval(0.0),
-      delay(0)
+      delay(0),
+      direction("up"),
+      power(0)
     {}
     
     explicit Cube(const ci::Vec3f& cube_pos) :
@@ -42,8 +50,12 @@ struct Stage {
     void cleanup() {
       pattern.clear();
       target.clear();
+      
       interval = 0.0f;
       delay    = 0.0f;
+
+      direction = std::string("up");
+      power = 0;
     }
   };
   
@@ -69,32 +81,40 @@ struct Stage {
   void toggleItem(const ci::Vec2i& pos) {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
-      if (cube->moving || cube->sw || cube->falling) return;
-      cube->item = !cube->item;
+      if (cube->type & ~Cube::ITEM) return;
+      cube->type ^= Cube::ITEM;
     }
   }
   
   void toggleMoving(const ci::Vec2i& pos) {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
-      if (cube->item || cube->sw || cube->falling) return;
-      cube->moving = !cube->moving;
+      if (cube->type & ~Cube::MOVING) return;
+      cube->type ^= Cube::MOVING;
     }
   }
 
   void toggleSwitch(const ci::Vec2i& pos) {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
-      if (cube->item || cube->moving || cube->falling) return;
-      cube->sw = !cube->sw;
+      if (cube->type & ~Cube::SWITCH) return;
+      cube->type ^= Cube::SWITCH;
     }
   }
 
   void toggleFalling(const ci::Vec2i& pos) {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
     if (cube) {
-      if (cube->item || cube->moving || cube->sw) return;
-      cube->falling = !cube->falling;
+      if (cube->type & ~Cube::FALLING) return;
+      cube->type ^= Cube::FALLING;
+    }
+  }
+  
+  void toggleOneway(const ci::Vec2i& pos) {
+    auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
+    if (cube) {
+      if (cube->type & ~Cube::ONEWAY) return;
+      cube->type ^= Cube::ONEWAY;
     }
   }
 
@@ -144,6 +164,20 @@ struct Stage {
     return cube ? cube->delay : dummy_param;
   }
 
+  std::string& getDirection(const ci::Vec2i& pos) {
+    auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
+
+    static std::string dummy_param = std::string();
+    return cube ? cube->direction : dummy_param;
+  }
+  
+  int& getPower(const ci::Vec2i& pos) {
+    auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
+
+    static int dummy_param = 0;
+    return cube ? cube->power : dummy_param;
+  }
+
   
   void reduceSwitchTarget(const ci::Vec2i& pos) {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
@@ -180,24 +214,28 @@ struct Stage {
 
   bool isItemCube(const ci::Vec2i& pos) const {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
-    return cube && cube->item;
+    return cube && (cube->type & Cube::ITEM);
   }
 
   bool isMovingCube(const ci::Vec2i& pos) const {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
-    return cube && cube->moving;
+    return cube && (cube->type & Cube::MOVING);
   }
   
   bool isSwitchCube(const ci::Vec2i& pos) const {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
-    return cube && cube->sw;
+    return cube && (cube->type & Cube::SWITCH);
   }
 
   bool isFallingCube(const ci::Vec2i& pos) const {
     auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
-    return cube && cube->falling;
+    return cube && (cube->type & Cube::FALLING);
   }
-  
+
+  bool isOnewayCube(const ci::Vec2i& pos) const {
+    auto* cube = getCube(ci::Vec3i(pos.x, 0, pos.y));
+    return cube && (cube->type & Cube::ONEWAY);
+  }
 
   const Cube* const getCube(const ci::Vec3i& pos) const {
     for (auto& rows : body) {
@@ -220,12 +258,7 @@ struct Stage {
     for (auto& row : body) {
       for (auto& cube : row) {
         cube.pos.y = 0;
-        
-        cube.item    = false;
-        cube.moving  = false;
-        cube.sw      = false;
-        cube.falling = false;
-        
+        cube.type  = Cube::NONE;
         cube.cleanup();
       }
     }
@@ -235,10 +268,7 @@ struct Stage {
     for (auto& row : body) {
       for (auto& cube : row) {
         if (cube.pos.y < 0) {
-          cube.item    = false;
-          cube.moving  = false;
-          cube.sw      = false;
-          cube.falling = false;
+          cube.type = Cube::NONE;
         }
       }
     }

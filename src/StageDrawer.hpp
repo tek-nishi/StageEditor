@@ -17,20 +17,30 @@ void draw(const Stage& stage) {
     for (const auto& cube : rows) {
       if (cube.pos.y < 0) continue;
 
-      if (cube.item) {
+      switch (cube.type) {
+      case Stage::Cube::ITEM:
         ci::gl::color(1, 1, 0);
-      }
-      else if (cube.moving) {
+        break;
+
+      case Stage::Cube::MOVING:
         ci::gl::color(0, 1, 0);
-      }
-      else if (cube.sw) {
+        break;
+
+      case Stage::Cube::SWITCH:
         ci::gl::color(1, 0, 1);
-      }
-      else if (cube.falling) {
+        break;
+
+      case Stage::Cube::FALLING:
         ci::gl::color(1, 0.5, 0);
-      }
-      else {
+        break;
+
+      case Stage::Cube::ONEWAY:
+        ci::gl::color(0, 0.5, 1);
+        break;
+
+      default:
         ci::gl::color(stage.color);
+        break;
       }
       
       float size = 0.9;      
