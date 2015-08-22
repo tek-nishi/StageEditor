@@ -386,8 +386,8 @@ class StageEditorApp : public AppNative {
 
     settings_panel->addSeparator();
 
-    settings_panel->addParam("x", &cursor_pos.x, false);
-    settings_panel->addParam("z", &cursor_pos.y, false);
+    settings_panel->addParam("x", &cursor_pos.x, true);
+    settings_panel->addParam("z", &cursor_pos.y, true);
 
     settings_panel->addSeparator();
 
