@@ -328,6 +328,8 @@ class StageEditorApp : public AppNative {
     auto backup_path = getDocumentPath(std::string("backup/") + makeStagePath(stage_num))
       + createUniquePath();
 
+    console() << "backup to:" << backup_path << std::endl;
+
     boost::filesystem::copy_file(origin_path, backup_path);
   }
   
@@ -352,7 +354,7 @@ class StageEditorApp : public AppNative {
     return full_path.str();
 #else
     // Windowsはassetから
-    return getAssetPath().str();
+    return ci::app::getAssetPath(std::string("/")).string() + path;
 #endif
   }
 
@@ -364,9 +366,9 @@ class StageEditorApp : public AppNative {
     std::time_t t = std::chrono::system_clock::to_time_t(now);
 
     const tm* lt = std::localtime(&t);
-    
+
     std::ostringstream path;
-    path << "." << std::put_time(lt, "%F-%T.")
+    path << "." << std::put_time(lt, "%Y-%m-%d %H-%M-%S.")
          << unique_num;
 
     unique_num += 1;
@@ -416,8 +418,8 @@ class StageEditorApp : public AppNative {
 
     settings_panel->addSeparator();
 
-    settings_panel->addParam("camera", &stage.camera);
-    settings_panel->addParam("light_tween", &stage.light_tween);
+	settings_panel->addParam("camera", &stage.camera);
+	settings_panel->addParam("light_tween", &stage.light_tween);
 
     settings_panel->addSeparator();
 
@@ -430,7 +432,6 @@ class StageEditorApp : public AppNative {
           stage.resize();
         });
 
-    
     settings_panel->addParam("length", &stage.size.y)
       .min(1)
       .updateFn([this]() {
