@@ -14,6 +14,7 @@
     },
 
     "copy_path": "../../BrickTrip/assets/",
+    "auto_backup": false,
     
     "stage": [
       "startline.json",

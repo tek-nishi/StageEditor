@@ -26,6 +26,7 @@ class StageEditorApp : public AppNative {
   
   std::vector<std::string> stage_path;
   std::string copy_path;
+  bool auto_backup;
 
   
   int current_stage;
@@ -64,6 +65,7 @@ class StageEditorApp : public AppNative {
       stage_path.push_back(path.getValue<std::string>());      
     }
     copy_path = params_["app.copy_path"].getValue<std::string>();
+    auto_backup = params_["app.auto_backup"].getValue<bool>();
     
     auto active_touch = ci::System::hasMultiTouch();
     if (active_touch) {
@@ -314,7 +316,9 @@ class StageEditorApp : public AppNative {
   }
 
   void writeStage(const int stage_num) {
-    backupStage(stage_num);
+    if (auto_backup) {
+      backupStage(stage_num);
+    }
 
     stage.validate();
 
