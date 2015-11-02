@@ -66,11 +66,15 @@ class StageEditorApp : public AppNative {
     }
     copy_path = params_["app.copy_path"].getValue<std::string>();
     auto_backup = params_["app.auto_backup"].getValue<bool>();
+
+    settings->setFrameRate(params_["app.frame_rate"].getValue<float>());
     
+#if 0
     auto active_touch = ci::System::hasMultiTouch();
     if (active_touch) {
       settings->enableMultiTouch();
     }
+#endif
   }
 
 	void setup() override {

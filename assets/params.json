@@ -1,6 +1,7 @@
 {
   "app": {
     "size": [ 640, 800 ],
+    "frame_rate": 30,
     "grid": 8,
 
     "settings": {
@@ -14,7 +15,7 @@
     },
 
     "copy_path": "../../BrickTrip/assets/",
-    "auto_backup": false,
+    "auto_backup": true,
     
     "stage": [
       "startline.json",
@@ -29,7 +30,8 @@
       "stage08.json",
       "stage09.json",
       "stage10.json",
-      "stage11.json"
+      "stage11.json",
+      "sandbox.json"
     ]
   }
 }
