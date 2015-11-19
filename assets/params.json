@@ -2,6 +2,7 @@
   "app": {
     "size": [ 640, 800 ],
     "frame_rate": 30,
+    "frame_rate_low": 1,
     "grid": 8,
 
     "settings": {

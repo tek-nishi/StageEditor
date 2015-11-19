@@ -78,6 +78,17 @@ class StageEditorApp : public AppNative {
   }
 
 	void setup() override {
+#if defined(CINDER_MAC)
+    // バックグラウンドになった時に全速力で更新されるのを防ぐ
+    get()->getSignalWillResignActive().connect([this]() noexcept {
+        setFrameRate(params_["app.frame_rate_low"].getValue<float>());
+      });
+    
+    get()->getSignalDidBecomeActive().connect([this]() noexcept {
+        setFrameRate(params_["app.frame_rate"].getValue<float>());
+      });
+#endif
+    
     view_offset = Vec2f(200, 500);
     view_rotate = 180.0f;
     view_scale  = Vec2f(20, 20);
