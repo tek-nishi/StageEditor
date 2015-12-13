@@ -425,15 +425,15 @@ class StageEditorApp : public AppNative {
 
     settings_panel->addParam("build_speed", &stage.build_speed)
       .min(0)
-      .step(0.05);
+      .step(0.001);
     
     settings_panel->addParam("collapse_speed", &stage.collapse_speed)
       .min(0)
-      .step(0.05);
+      .step(0.001);
     
     settings_panel->addParam("auto_collapse", &stage.auto_collapse)
       .min(0)
-      .step(0.05);
+      .step(0.001);
 
     settings_panel->addSeparator();
 
