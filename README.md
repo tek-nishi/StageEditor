@@ -5,18 +5,17 @@
 
 BRICK&TRIPでは、ステージデータ制作をすべてこのエディタでおこないました。
 
-+ Cinderのダイアログを使ったユーザーインターフェース
++ Cinderで用意されているダイアログを使ったユーザーインターフェース
 + ステージ編集はこのツールで完結しています
 
-本制作ではプロトタイプで書いたコードは全て捨て、いちから実装をおこなっています。
-
 ## How To Build
-1. [公式サイト](http://libcinder.org)で配布されているCinderライブラリ(0.8.6)のフォルダを、プロジェクトと同じ場所に置く
+1. Cinderライブラリ(0.8.6)を[公式サイト](http://libcinder.org)からダウンロード。プロジェクトと同じ場所に置く
 1. プロジェクトファイルを開く
+1. Cinderライブラリへのパスを変更する
 1. Let's enjoy!!
 
 ### 注意:Windows版
-**VisualStudio2013** 必須。おそらくそれ以外のバージョンではビルドできません。
+**VisualStudio2013** 必須。それ以外のバージョンではおそらくビルドできません。
 
 ## Liense
 License All source code files are licensed under the MPLv2.0 license
